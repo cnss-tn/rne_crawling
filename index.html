@@ -1,0 +1,575 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>RNE recherche (Mode Bash)</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <style>
+      :root {
+        --accent: #0b7b3b;
+        --muted: #7a7a7a;
+      }
+      body {
+        background: #f7f8f9;
+        font-family: "Inter", "Segoe UI", Arial;
+        color: #222;
+      }
+      .card {
+        border: none;
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+      }
+      .btn-accent {
+        background: var(--accent);
+        color: #fff;
+      }
+      .btn-accent:hover {
+        background: #096c33;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        table-layout: fixed;
+        font-size: 0.7rem;
+      }
+      th,
+      td {
+        border: 1px solid #dee2e6;
+        padding: 6px;
+        text-align: center;
+        vertical-align: middle;
+        word-wrap: break-word;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      thead {
+        background: #f1f3f4;
+      }
+      .table-responsive {
+        overflow-x: auto;
+      }
+      .pagination {
+        justify-content: center;
+        margin-top: 10px;
+      }
+      .progress {
+        height: 18px;
+      }
+      .small-muted {
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+    </style>
+  </head>
+  <body class="py-4">
+    <div class="container-fluid">
+      <div class="text-center mb-4">
+        <h2 class="fw-semibold">RNE recherche (Mode Bash)</h2>
+
+        <div class="mt-3 mx-auto" style="max-width: 400px">
+          <div class="mb-1 small-muted">Progress</div>
+          <div class="progress" style="height: 12px; border-radius: 6px">
+            <div id="progressBar" class="progress-bar bg-info" role="progressbar" style="width: 0%; font-size: 0.6rem; line-height: 12px">0%</div>
+          </div>
+          <div id="status" class="mt-2 small-muted d-flex align-items-center gap-2">
+            <div id="loaderSpinner" class="spinner-border spinner-border-sm text-success" role="status" style="display: none">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+            <span id="statusText"></span>
+          </div>
+        </div>
+      </div>
+      <div class="row g-4">
+        <div class="col-12 col-lg-4">
+          <div class="card p-4">
+            <div class="mb-3">
+              <label class="form-label">Champs à rechercher (plusieurs mots-clés séparés par des virgules)</label>
+              <div class="d-flex flex-column gap-2">
+                <div style="display: flex; align-items: center; margin-bottom: 0.5em">
+                  <label for="nomCommercialFrInput" style="line-height: 1; min-width: 150px">Nom commercial</label>
+                  <input type="text" id="nomCommercialFrInput" class="form-control" style="max-width: 70%; margin-left: 1em; line-height: 1" />
+                </div>
+
+                <div style="display: flex; align-items: center; margin-bottom: 0.5em">
+                  <label for="nomCommercialArInput" style="line-height: 1; min-width: 150px">الإسم التجاري</label>
+                  <input type="text" id="nomCommercialArInput" class="form-control" style="max-width: 70%; margin-left: 1em; line-height: 1" />
+                </div>
+
+                <div style="display: flex; align-items: center; margin-bottom: 0.5em">
+                  <label for="detailActiviteFrInput" style="line-height: 1; min-width: 150px">Libellé activité</label>
+                  <input type="text" id="detailActiviteFrInput" class="form-control" style="max-width: 70%; margin-left: 1em; line-height: 1" />
+                </div>
+
+                <div style="display: flex; align-items: center; margin-bottom: 0.5em">
+                  <label for="detailActiviteArInput" style="line-height: 1; min-width: 150px">موضوع النشاط</label>
+                  <input type="text" id="detailActiviteArInput" class="form-control" style="max-width: 70%; margin-left: 1em; line-height: 1" />
+                </div>
+
+                <div style="display: flex; align-items: center; margin-bottom: 0.5em">
+                  <label for="denominationLatinInput" style="line-height: 1; min-width: 150px">Dénomination</label>
+                  <input type="text" id="denominationLatinInput" class="form-control" style="max-width: 70%; margin-left: 1em; line-height: 1" />
+                </div>
+
+                <div style="display: flex; align-items: center; margin-bottom: 0.5em">
+                  <label for="denominationInput" style="line-height: 1; min-width: 150px">التسمية</label>
+                  <input type="text" id="denominationInput" class="form-control" style="max-width: 70%; margin-left: 1em; line-height: 1" />
+                </div>
+
+                <div style="display: flex; align-items: center; margin-bottom: 0.5em">
+                  <label for="rueSiegeFrInput" style="line-height: 1; min-width: 150px">Adresse</label>
+                  <input type="text" id="rueSiegeFrInput" class="form-control" style="max-width: 70%; margin-left: 1em; line-height: 1" />
+                </div>
+
+                <div style="display: flex; align-items: center; margin-bottom: 0.5em">
+                  <label for="rueSiegeArInput" style="line-height: 1; min-width: 150px">عنوان المقر</label>
+                  <input type="text" id="rueSiegeArInput" class="form-control" style="max-width: 70%; margin-left: 1em; line-height: 1" />
+                </div>
+              </div>
+            </div>
+
+            <div class="mb-3" style="display: none">
+              <label class="form-label">Options</label>
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="uniqueRows" checked />
+                <label class="form-check-label" for="uniqueRows">Supprimer doublons par identifiant</label>
+              </div>
+            </div>
+            <div class="d-grid gap-2">
+              <button id="runBtn" class="btn btn-accent fw-semibold">Lancer la recherche</button>
+              <button id="clearBtn" class="btn btn-outline-secondary">Réinitialiser résultats</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-12 col-lg-8">
+          <div class="card p-4">
+            <div class="mb-2 d-flex justify-content-between align-items-center">
+              <button id="exportAll" class="btn btn-accent fw-semibold">Exporter XLSX (tout)</button>
+              <div class="small-muted">Lignes totales: <span id="totalCount">0</span></div>
+            </div>
+
+            <div class="table-responsive" style="max-height: 520px; overflow: auto">
+              <table id="resultsTable" class="table table-sm table-bordered">
+                <thead id="tableHead">
+                  <tr></tr>
+                </thead>
+                <tbody id="tableBody"></tbody>
+              </table>
+            </div>
+
+            <nav>
+              <ul id="pagination" class="pagination"></ul>
+            </nav>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+
+    <script>
+      const runBtn = document.getElementById("runBtn");
+      const clearBtn = document.getElementById("clearBtn");
+      const exportAllBtn = document.getElementById("exportAll");
+      const progressBar = document.getElementById("progressBar");
+      const totalCountEl = document.getElementById("totalCount");
+      const tableHead = document.getElementById("tableHead").querySelector("tr");
+      const tableBody = document.getElementById("tableBody");
+      const paginationEl = document.getElementById("pagination");
+
+      let allRows = [];
+      let columns = ["champs cherché", "Mot cherché", "identifiantUnique", "denominationLatin", "denomination", "nomFr", "nomAr", "prenomFr", "prenomAr", "nomCommercialFr", "nomCommercialAr", "Status (Active/Non)", "Adresse"];
+      let rowsPerPage = 10;
+      let currentPage = 1;
+
+      const columnHeaders = {
+        "champs cherché": "Champs cherché",
+        "Mot cherché": "Mot cherché",
+        identifiantUnique: "Matricule fiscale",
+        denominationLatin: "Dénomination",
+        denomination: "التسمية",
+        nomFr: "Nom du responsable",
+        nomAr: "لقب المسؤول",
+        prenomFr: "Prénom du responsable",
+        prenomAr: "اسم المسؤول",
+        nomCommercialFr: "Nom commercial",
+        nomCommercialAr: "الإسم التجاري",
+        "Status (Active/Non)": "Status (Active/Non)",
+        Adresse: "Adresse",
+      };
+
+      const fieldNamesMap = {
+        nomCommercialFr: "Nom commercial",
+        nomCommercialAr: "الإسم التجاري",
+        detailActiviteFr: "Libellé activité",
+        detailActiviteAr: "موضوع النشاط",
+        denominationLatin: "Dénomination",
+        denomination: "التسمية",
+        rueSiegeFr: "Adresse",
+        rueSiegeAr: "عنوان المقر",
+      };
+
+      /* ---------------------------
+   Cache & helper for details
+   --------------------------- */
+      const detailsCache = {}; // id -> details object
+      async function getDetails(id) {
+        if (!id) return null;
+        if (detailsCache[id]) return detailsCache[id];
+        try {
+          const resp = await fetch(`https://www.registre-entreprises.tn/api/rne-api/front-office/entites/short-details/${encodeURIComponent(id)}`);
+          if (!resp.ok) throw new Error("HTTP " + resp.status);
+          const json = await resp.json();
+          detailsCache[id] = json;
+          return json;
+        } catch (e) {
+          console.warn("getDetails error for", id, e);
+          detailsCache[id] = null; // cache negative result to avoid retry storms
+          return null;
+        }
+      }
+
+      /* fetch details for unique ids with concurrency limit and update progress */
+      async function fetchDetailsForIds(idSet, updateProgressCallback) {
+        const ids = Array.from(idSet);
+        const concurrency = 8; // tune as necessary
+        let fetched = 0;
+        for (let i = 0; i < ids.length; i += concurrency) {
+          const batch = ids.slice(i, i + concurrency);
+          await Promise.all(
+            batch.map(async (id) => {
+              if (!detailsCache[id]) {
+                await getDetails(id);
+              }
+              fetched++;
+              if (updateProgressCallback) updateProgressCallback(fetched);
+            }),
+          );
+        }
+        return; // detailsCache is populated
+      }
+
+      /* ---------------------------
+   UI helpers
+   --------------------------- */
+      function setStatus(text, isError = false, loading = false) {
+        const statusText = document.getElementById("statusText");
+        const loaderSpinner = document.getElementById("loaderSpinner");
+        statusText.textContent = text;
+        statusText.style.color = isError ? "crimson" : "";
+        loaderSpinner.style.display = loading ? "inline-block" : "none";
+      }
+
+      function updateProgress(pct) {
+        progressBar.style.width = pct + "%";
+        progressBar.textContent = pct + "%";
+        if (pct >= 100) {
+          progressBar.classList.remove("bg-info");
+          progressBar.classList.add("bg-success");
+        } else {
+          progressBar.classList.remove("bg-success");
+          progressBar.classList.add("bg-info");
+        }
+      }
+
+      /* ---------------------------
+   Main search logic
+   --------------------------- */
+      async function runSearch() {
+        const urlBaseFinal = "https://www.registre-entreprises.tn/api/rne-api/front-office/shortEntites?limit=20&notInStatusList=EN_COURS_CREATION&typeEntite=M";
+
+        const uniqueRows = true; // toujours actif, option masquée du formulaire
+        rowsPerPage = 5;
+
+        const fields = ["nomCommercialFr", "nomCommercialAr", "detailActiviteFr", "detailActiviteAr", "denominationLatin", "denomination", "rueSiegeFr", "rueSiegeAr"];
+
+        // collect search params from inputs
+        const searchParams = {};
+        for (const field of fields) {
+          const el = document.getElementById(field + "Input");
+          if (!el) continue;
+          const val = el.value.trim();
+          if (val.length > 0) {
+            searchParams[field] = val
+              .split(",")
+              .map((k) => k.trim())
+              .filter((k) => k.length > 0);
+          }
+        }
+
+        if (Object.keys(searchParams).length === 0) {
+          alert("Veuillez entrer au moins un mot-clé dans un champ.");
+          return;
+        }
+
+        // reset
+        allRows = [];
+        currentPage = 1;
+        renderTable(1);
+        updateProgress(0);
+        setStatus("Démarrage...", false, false);
+        // 🔥 SCROLL TO TOP HERE (exact position)
+        window.scrollTo({ top: 0, behavior: "smooth" });
+
+        // prepare request plan
+        const etats = ["Actif", "Non"];
+        // compute total shortEntites requests
+        const totalShortRequests = Object.values(searchParams).reduce((sum, arr) => sum + arr.length * etats.length, 0);
+        let completedShort = 0;
+
+        // phase 1: perform searches (shortEntites) with afterId pagination (limit max 20, limit=-1 => 500 on gros volumes)
+        for (const etat of etats) {
+          for (const [field, keywords] of Object.entries(searchParams)) {
+            for (const kw of keywords) {
+              const baseParams = `&etatRegistre=${encodeURIComponent(etat)}&${encodeURIComponent(field)}=${encodeURIComponent(kw)}`;
+              let afterId = null;
+              try {
+                setStatus(`Requête → "${kw}" dans ${fieldNamesMap[field] || field} (Etat: ${etat})`, false, true);
+                while (true) {
+                  const url = urlBaseFinal + baseParams + (afterId ? `&afterId=${encodeURIComponent(afterId)}` : ``);
+                  const resp = await fetch(url);
+                  if (!resp.ok) throw new Error("HTTP " + resp.status);
+                  const json = await resp.json();
+                  const registres = Array.isArray(json) ? json : json.registres || [];
+                  if (!registres.length) break;
+                  // add basic rows (adresse placeholder for now)
+                  for (const r of registres) {
+                    allRows.push({
+                      "champs cherché": fieldNamesMap[field] || field,
+                      "Mot cherché": kw,
+                      identifiantUnique: r.identifiantUnique || "-",
+                      denominationLatin: r.denominationLatin || "-",
+                      denomination: r.denomination || "-",
+                      nomFr: r.nomFr || "-",
+                      nomAr: r.nomAr || "-",
+                      prenomFr: r.prenomFr || "-",
+                      prenomAr: r.prenomAr || "-",
+                      nomCommercialFr: r.nomCommercialFr || "-",
+                      nomCommercialAr: r.nomCommercialAr || "-",
+                      "Status (Active/Non)": etat === "Actif" ? "Oui" : "Non",
+                      Adresse: "-", // placeholder -> filled later
+                    });
+                  }
+                  totalCountEl.textContent = allRows.length;
+                  if (registres.length < 20) break;
+                  afterId = registres[registres.length - 1].identifiantUnique;
+                  if (!afterId) break;
+                }
+              } catch (err) {
+                console.error(err);
+                setStatus(`Erreur réseau pour "${kw}"`, true, false);
+              }
+              completedShort++;
+              // update visual progress for phase1 (we'll combine later)
+              const pctShort = Math.round((completedShort / Math.max(1, totalShortRequests)) * 80); // reserve 80% for searches
+              updateProgress(pctShort);
+              totalCountEl.textContent = allRows.length;
+            }
+          }
+        }
+
+        // optional dedup before fetching details to reduce detail requests
+        if (uniqueRows) {
+          const seenIds = new Set();
+          allRows = allRows.filter((r) => {
+            const id = r.identifiantUnique;
+            if (!id || id === "-") return false;
+            if (seenIds.has(id)) return false;
+            seenIds.add(id);
+            return true;
+          });
+        }
+
+        // phase 2: fetch details for unique ids (addresses) with caching + concurrency
+        const uniqueIds = new Set(allRows.map((r) => r.identifiantUnique).filter((id) => id && id !== "-"));
+        const totalDetails = uniqueIds.size;
+        if (totalDetails > 0) {
+          setStatus(`Récupération des adresses (${totalDetails})...`, false, true);
+
+          let detailsFetched = 0;
+          // progress callback updates combined progress (searches + details)
+          await fetchDetailsForIds(uniqueIds, (fetchedInCallback) => {
+            detailsFetched = fetchedInCallback;
+            // combine phases: searches used up to 80%, details up to remaining 20%
+            const searchesPct = Math.round((completedShort / Math.max(1, totalShortRequests)) * 80);
+            const detailsPct = Math.round((detailsFetched / totalDetails) * 20);
+            updateProgress(Math.min(100, searchesPct + detailsPct));
+          });
+
+          // now fill Adresse field from cache
+          for (const row of allRows) {
+            const id = row.identifiantUnique;
+            const details = detailsCache[id];
+            if (details) {
+              const rue = details.rueAr || "";
+              const ville = details.villeAr || "";
+              const codePostal = details.codePostal || "";
+              const adresse = [rue, ville, codePostal].filter((s) => s && s.trim() !== "").join("، ");
+              row.Adresse = adresse || "-";
+            } else {
+              row.Adresse = "-";
+            }
+          }
+        }
+
+        // if user didn't request uniqueRows earlier, we can still optionally remove duplicates now if desired
+        if (uniqueRows && allRows.length === 0) {
+          // nothing
+        }
+
+        updateProgress(100);
+        totalCountEl.textContent = allRows.length;
+        setStatus(`Terminé — ${allRows.length} lignes collectées.`, false, false);
+        buildTableHeader();
+        renderTable(1);
+      }
+
+      /* ---------------------------
+   Table & export helpers
+   --------------------------- */
+      function buildTableHeader() {
+        tableHead.innerHTML = "";
+        for (const col of columns) {
+          const th = document.createElement("th");
+          th.textContent = columnHeaders[col] || col;
+          tableHead.appendChild(th);
+        }
+      }
+
+      function renderTable(page) {
+        currentPage = page || 1;
+        tableBody.innerHTML = "";
+        const total = allRows.length;
+        totalCountEl.textContent = total;
+        if (!total) {
+          paginationEl.innerHTML = "";
+          return;
+        }
+
+        const start = (currentPage - 1) * rowsPerPage;
+        const end = Math.min(start + rowsPerPage, total);
+        for (let i = start; i < end; i++) {
+          const row = allRows[i];
+          const tr = document.createElement("tr");
+          for (const col of columns) {
+            const td = document.createElement("td");
+            td.textContent = row[col] || "-";
+            tr.appendChild(td);
+          }
+          tableBody.appendChild(tr);
+        }
+
+        buildPagination();
+      }
+
+      function exportAllToXlsx() {
+        if (!allRows.length) {
+          alert("Aucune donnée à exporter.");
+          return;
+        }
+
+        const ws = XLSX.utils.json_to_sheet(allRows, { header: columns });
+        const range = XLSX.utils.decode_range(ws["!ref"]);
+        for (let C = range.s.c; C <= range.e.c; ++C) {
+          const cell_address = XLSX.utils.encode_cell({ r: 0, c: C });
+          const originalKey = columns[C];
+          const header = columnHeaders[originalKey] || originalKey;
+          if (!ws[cell_address]) ws[cell_address] = {};
+          ws[cell_address].v = header;
+        }
+
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Résultats");
+        XLSX.writeFile(wb, "Résultats_RNE.xlsx");
+      }
+
+      /* ---------------------------
+   Pagination
+   --------------------------- */
+      function buildPagination() {
+        const totalPages = Math.ceil(allRows.length / rowsPerPage);
+        paginationEl.innerHTML = "";
+
+        if (totalPages <= 1) return;
+
+        const prevLi = document.createElement("li");
+        prevLi.className = "page-item " + (currentPage === 1 ? "disabled" : "");
+        const prevA = document.createElement("a");
+        prevA.className = "page-link";
+        prevA.href = "#";
+        prevA.textContent = "Prev";
+        prevA.addEventListener("click", (e) => {
+          e.preventDefault();
+          if (currentPage > 1) renderTable(currentPage - 1);
+        });
+        prevLi.appendChild(prevA);
+        paginationEl.appendChild(prevLi);
+
+        const maxPagesToShow = 7;
+        let startPage = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2));
+        let endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
+        startPage = Math.max(1, endPage - maxPagesToShow + 1);
+
+        for (let i = startPage; i <= endPage; i++) {
+          const li = document.createElement("li");
+          li.className = "page-item " + (i === currentPage ? "active" : "");
+          const a = document.createElement("a");
+          a.className = "page-link";
+          a.href = "#";
+          a.textContent = i;
+          a.addEventListener("click", (e) => {
+            e.preventDefault();
+            if (i !== currentPage) renderTable(i);
+          });
+          li.appendChild(a);
+          paginationEl.appendChild(li);
+        }
+
+        const nextLi = document.createElement("li");
+        nextLi.className = "page-item " + (currentPage === totalPages ? "disabled" : "");
+        const nextA = document.createElement("a");
+        nextA.className = "page-link";
+        nextA.href = "#";
+        nextA.textContent = "Next";
+        nextA.addEventListener("click", (e) => {
+          e.preventDefault();
+          if (currentPage < totalPages) renderTable(currentPage + 1);
+        });
+        nextLi.appendChild(nextA);
+        paginationEl.appendChild(nextLi);
+      }
+
+      /* ---------------------------
+   Events
+   --------------------------- */
+      runBtn.addEventListener("click", async () => {
+        runBtn.disabled = true;
+        clearBtn.disabled = true;
+        exportAllBtn.disabled = true;
+        try {
+          await runSearch();
+        } finally {
+          runBtn.disabled = false;
+          clearBtn.disabled = false;
+          exportAllBtn.disabled = false;
+        }
+      });
+
+      clearBtn.addEventListener("click", () => {
+        allRows = [];
+        renderTable(1);
+        updateProgress(0);
+        totalCountEl.textContent = 0;
+        setStatus("");
+      });
+
+      exportAllBtn.addEventListener("click", exportAllToXlsx);
+
+      /* initial render */
+      buildTableHeader();
+      renderTable(1);
+    </script>
+  </body>
+</html>
